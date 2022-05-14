@@ -12,7 +12,7 @@ const Signup = () => {
         user,
         loading,
         error,
-    ] = useCreateUserWithEmailAndPassword(auth);
+    ] = useCreateUserWithEmailAndPassword(auth, { sendEmailVerification: true });
     const [updateProfile, updating, updateError] = useUpdateProfile(auth);
     const { register, formState: { errors }, handleSubmit } = useForm();
     const navigate = useNavigate()
@@ -27,13 +27,14 @@ const Signup = () => {
     }
 
     if (user || gUser) {
-        console.log(user || gUser)
+        console.log(user || gUser);
     }
 
     const onSubmit = async data => {
         await createUserWithEmailAndPassword(data.email, data.password);
         await updateProfile({ displayName: data.name });
-        navigate('/appointment')
+        navigate('/appointment');
+        alert('verification email sent')
     };
     return (
         <div className='flex justify-center'>

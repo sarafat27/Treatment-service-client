@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import auth from '../../firebase.init';
-import { useSignInWithEmailAndPassword, useSignInWithGoogle } from 'react-firebase-hooks/auth';
+import { useSendPasswordResetEmail, useSignInWithEmailAndPassword, useSignInWithGoogle } from 'react-firebase-hooks/auth';
 import { useForm } from 'react-hook-form';
 import Loading from '../Shared/Loading';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -13,6 +13,9 @@ const Login = () => {
         loading,
         error,
     ] = useSignInWithEmailAndPassword(auth);
+    const [sendPasswordResetEmail, sending, resetError] = useSendPasswordResetEmail(
+        auth
+    );
     const { register, formState: { errors }, handleSubmit } = useForm();
     const navigate = useNavigate();
     const location = useLocation();
@@ -24,18 +27,29 @@ const Login = () => {
         }
     }, [user, gUser, from, navigate])
 
-    if (loading || gLoading) {
+    if (loading || gLoading || sending) {
         return <Loading></Loading>
     }
 
     let signInError;
-    if (error || gError) {
-        signInError = <p className='text-red-600'>{error?.message || gError?.message}</p>
+    if (error || gError || resetError) {
+        signInError = <p className='text-red-600'>{error?.message || gError?.message || resetError?.message}</p>
     }
 
     const onSubmit = data => {
         signInWithEmailAndPassword(data.email, data.password)
     };
+
+    const resetPassword = async () => {
+        const email = prompt('please give your email')
+        if (email) {
+            await sendPasswordResetEmail(email);
+            alert('email sent')
+        }
+        else {
+            alert('please give your email')
+        }
+    }
     return (
         <div className='flex justify-center'>
             <div className="card w-96 bg-base-100 shadow-xl">
@@ -80,6 +94,8 @@ const Login = () => {
                             <label className="label">
                                 {errors.password?.type === 'required' && <span className="label-text-alt text-red-600">{errors.password.message}</span>}
                                 {errors.password?.type === 'minLength' && <span className="label-text-alt text-red-600">{errors.password.message}</span>}
+                                <span onClick={resetPassword}
+                                    className="label-text-alt text-primary">Forgot password?</span>
                             </label>
                         </div>
                         {signInError}
