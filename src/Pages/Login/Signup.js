@@ -4,6 +4,8 @@ import { useCreateUserWithEmailAndPassword, useSignInWithGoogle, useUpdateProfil
 import { useForm } from 'react-hook-form';
 import Loading from '../Shared/Loading';
 import { Link, useNavigate } from 'react-router-dom';
+import useToken from '../../Hooks/useToken';
+import { toast } from 'react-toastify';
 
 const Signup = () => {
     const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle(auth);
@@ -15,7 +17,8 @@ const Signup = () => {
     ] = useCreateUserWithEmailAndPassword(auth, { sendEmailVerification: true });
     const [updateProfile, updating, updateError] = useUpdateProfile(auth);
     const { register, formState: { errors }, handleSubmit } = useForm();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const [token] = useToken(user || gUser);
 
     if (loading || gLoading || updating) {
         return <Loading></Loading>
@@ -26,15 +29,14 @@ const Signup = () => {
         signInError = <p className='text-red-600'>{error?.message || gError?.message || updateError?.message}</p>
     }
 
-    if (user || gUser) {
-        console.log(user || gUser);
+    if (token) {
+        navigate('/appointment');
     }
 
     const onSubmit = async data => {
         await createUserWithEmailAndPassword(data.email, data.password);
         await updateProfile({ displayName: data.name });
-        navigate('/appointment');
-        alert('verification email sent')
+        toast('verification email sent')
     };
     return (
         <div className='flex justify-center'>
